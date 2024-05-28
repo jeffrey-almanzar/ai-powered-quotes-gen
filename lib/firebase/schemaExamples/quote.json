@@ -1,0 +1,101 @@
+{
+    "quoteDate": "2024-05-28",
+    "to": {
+        "name": "John Smith",
+        "title": "Procurement Manager",
+        "company": "ABC Manufacturing Co.",
+        "email": "john.smith@abcmfg.com"
+    },
+    "from": {
+        "name": "Jane Doe",
+        "title": "Sales Manager",
+        "company": "XYZ Metal Service Center",
+        "email": "jane.doe@xyzmetal.com",
+        "phone": "(555) 987-6543"
+    },
+    "quoteNumber": "Q-2024-002",
+    "referenceRFQ": "RFQ-2024-002",
+    "items": [
+        {
+            "description": "Hot Rolled Steel Plates",
+            "grade": "ASTM A36",
+            "dimensions": {
+                "thickness": "0.5 inches",
+                "width": "48 inches",
+                "length": "96 inches"
+            },
+            "quantity": 100,
+            "unitPrice": 150.00,
+            "totalPrice": 15000.00
+        },
+        {
+            "description": "Stainless Steel Tubing",
+            "grade": "304",
+            "dimensions": {
+                "outerDiameter": "2 inches",
+                "wallThickness": "0.125 inches",
+                "length": "20 feet"
+            },
+            "quantity": 50,
+            "unitPrice": 80.00,
+            "totalPrice": 4000.00
+        },
+        {
+            "description": "Aluminum Sheets",
+            "grade": "5052-H32",
+            "dimensions": {
+                "thickness": "0.25 inches",
+                "width": "48 inches",
+                "length": "120 inches"
+            },
+            "quantity": 200,
+            "unitPrice": 120.00,
+            "totalPrice": 24000.00
+        }
+    ],
+    "processingServices": [
+        {
+            "description": "Plasma cutting of hot rolled steel plates",
+            "costPerUnit": 2.00,
+            "totalUnits": 100,
+            "totalCost": 200.00
+        },
+        {
+            "description": "Polishing of stainless steel tubing",
+            "costPerUnit": 10.00,
+            "totalUnits": 50,
+            "totalCost": 500.00
+        },
+        {
+            "description": "Anodizing of aluminum sheets in black finish",
+            "costPerUnit": 15.00,
+            "totalUnits": 200,
+            "totalCost": 3000.00
+        }
+    ],
+    "delivery": {
+        "location": "ABC Manufacturing Co., 789 Industrial Blvd, Anycity, USA",
+        "date": "2024-07-20",
+        "shippingMethod": "FOB Destination",
+        "shippingCost": 1000.00
+    },
+    "qualityAssurance": {
+        "certification": "Mill test reports (MTR) for all materials included",
+        "inspection": "Visual and dimensional inspection reports included"
+    },
+    "paymentTerms": "Net 30 days",
+    "totalCostSummary": {
+        "materialsCost": 43000.00,
+        "processingCost": 3700.00,
+        "shippingCost": 1000.00,
+        "grandTotal": 47700.00
+    },
+    "closing": {
+        "message": "Thank you for the opportunity to quote on your requirements. We look forward to working with you.",
+        "sincerely": "Jane Doe",
+        "title": "Sales Manager",
+        "company": "XYZ Metal Service Center",
+        "email": "jane.doe@xyzmetal.com",
+        "phone": "(555) 987-6543"
+    }
+}
