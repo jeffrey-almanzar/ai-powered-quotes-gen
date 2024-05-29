@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Image from "next/image"
 import Link from "next/link"
@@ -90,6 +90,7 @@ import {
 } from "@/app/components/ui/alert-dialog"
 
 import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT } from "@/lib/openai";
+import { createProducts } from "@/lib/firebase/seed";
 
 const links = [
     {
@@ -242,6 +243,10 @@ export function GenQuoteModal(props) {
     }
 
     const { isWorking, message } = quoteGenState;
+
+    // useEffect(() => {
+    //     createProducts().then(() => console.log("created"))
+    // }, [])
 
     return (
         <AlertDialog>
