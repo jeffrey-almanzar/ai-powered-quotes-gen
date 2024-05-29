@@ -1,3 +1,6 @@
+'use client';
+import { useState } from "react";
+
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -16,6 +19,10 @@ import {
     TextQuote,
     Users2,
     ServerCog,
+    LoaderCircle,
+    GanttChart,
+    CircleX,
+    CircleCheck,
 } from "lucide-react"
 
 import { Badge } from "@/app/components/ui/badge"
@@ -68,6 +75,22 @@ import {
     TooltipTrigger,
 } from "@/app/components/ui/tooltip"
 
+import { Textarea } from "@/app/components/ui/textarea"
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/app/components/ui/alert-dialog"
+
+import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT } from "@/lib/openai";
+
 const links = [
     {
         text: 'Dashboard',
@@ -112,6 +135,9 @@ const columns = [
         label: 'Date'
     },
     {
+        label: 'Name'
+    },
+    {
         label: 'Client'
     },
     {
@@ -122,32 +148,158 @@ const columns = [
 const quotes = [
     {
         date: '2023-07-12',
+        name: 'Some quote name',
         client: 'Test Company',
         total: '$90,000',
     },
     {
         date: '2023-07-12',
+        name: 'Some quote name',
         client: 'Test Company',
         total: '$90,000',
     },
     {
         date: '2023-07-12',
+        name: 'Some quote name',
         client: 'Test Company',
         total: '$90,000',
     },
     {
         date: '2023-07-12',
+        name: 'Some quote name',
         client: 'Test Company',
         total: '$90,000',
     },
     {
         date: '2023-07-12',
+        name: 'Some quote name',
         client: 'Test Company',
         total: '$90,000',
     },
 ];
 
+const NOT_STARTED = 'no-started';
+const PENDING_STATE = 'pending';
+const ERROR_STATE = 'error';
+const COMPLETED_STATE = 'completed';
+
+const iconsPerState = {
+    [NOT_STARTED]: GanttChart,
+    [PENDING_STATE]: LoaderCircle,
+    [ERROR_STATE]: CircleX,
+    [COMPLETED_STATE]: CircleCheck,
+}
+
+
+const steps = [
+    {
+        label: "Checking if it's a valid RFQ",
+        state: PENDING_STATE
+
+    },
+    {
+        label: "Extracting RFQ details",
+        state: NOT_STARTED
+
+    },
+    {
+        label: "Checking inventory",
+        state: NOT_STARTED
+    },
+    {
+        label: "Generating quote",
+        state: NOT_STARTED
+    },
+];
+
+export function GenQuoteModal(props) {
+    const {
+        onClick
+    } = props;
+
+    const [textareaValue, setTextAreaValue] = useState("");
+
+    const [quoteGenState, setQuoteGenState] = useState({
+        isWorking: false,
+        message: '',
+    });
+
+    async function generateQuote(event) {
+        try {
+            const isAValidRequestForQuote = await getAIAnswer(IS_RFQ_PROMPT, textareaValue);
+
+            if (isAValidRequestForQuote === 'Yes') {
+                const rfqDetails = await getAIAnswer(GET_RFQ_DETAILS_PROMPT, textareaValue);
+
+                // check inventory
+                // generate quote
+                // send email
+            }
+
+        } catch(err) {
+            console.log(err);
+        }
+    }
+
+    const { isWorking, message } = quoteGenState;
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button onClick={onClick} size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Generate Quote
+                    </span>
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="max-w-4xl">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Generate quote from RFQ email</AlertDialogTitle>
+                    {/* <AlertDialogDescription>
+                        Paste the RFQ email content below
+                    </AlertDialogDescription> */}
+                </AlertDialogHeader>
+                <div>
+                    {isWorking 
+                     ? (
+                        <ul>
+                            {steps.map(({label, state}, index) => {
+                            const Icon = iconsPerState[state];
+                            return (
+                                <li className="flex" key={`quote-step-${index}`}>
+                                    <Icon />
+                                    <span>{label}</span>
+                                </li>
+                            )
+                        })}
+                        </ul>
+                     )
+                     : (
+<Textarea value={textareaValue} onChange={(event) => setTextAreaValue(event.target.value)} className="min-h-36" placeholder="Paste the RFQ email content here" />
+                     )
+                    }
+                    
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    {/* <AlertDialogAction onClick={(e) => generateQuote(e)}>Generate</AlertDialogAction> */}
+                    <Button onClick={(e) => generateQuote(e)} size="sm" className="h-8 gap-1">
+                        <TextQuote className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Generate Quote
+                        </span>
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+}
+
+
 export default function Quotes() {
+    const [shouldOpenGenQuoteModal, setShouldOpenGenQuoteModal] = useState(false);
+
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
             <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -280,6 +432,9 @@ export default function Quotes() {
                     </DropdownMenu>
                 </header>
                 <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                    {shouldOpenGenQuoteModal && (
+                        <p>Yes render it</p>
+                    )}
                     <Tabs defaultValue="drafts">
                         <div className="flex items-center">
                             <TabsList>
@@ -315,12 +470,9 @@ export default function Quotes() {
                                         Export
                                     </span>
                                 </Button>
-                                <Button size="sm" className="h-8 gap-1">
-                                    <PlusCircle className="h-3.5 w-3.5" />
-                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Generate Quote
-                                    </span>
-                                </Button>
+                                <GenQuoteModal
+                                    onClick={() => setShouldOpenGenQuoteModal(!shouldOpenGenQuoteModal)} size="sm" className="h-8 gap-1"
+                                />
                             </div>
                         </div>
                         <TabsContent value="drafts">
@@ -328,7 +480,7 @@ export default function Quotes() {
                                 <CardHeader>
                                     <CardTitle>Quotes</CardTitle>
                                     <CardDescription>
-                                        Ai generated quotes.
+                                        <span className="inline-block pt-3">Ai generated quotes.</span>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -343,10 +495,13 @@ export default function Quotes() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {quotes.map(({ date, client, total }, index) => (
+                                            {quotes.map(({ date, name, client, total }, index) => (
                                                 <TableRow key={`quote-${index}`}>
                                                     <TableCell className="hidden md:table-cell">
                                                         {date}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {name}
                                                     </TableCell>
                                                     <TableCell className="font-medium">
                                                         {client}

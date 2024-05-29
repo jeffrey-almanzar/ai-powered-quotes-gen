@@ -1,0 +1,76 @@
+Request for Quotation (RFQ)
+
+Date: May 24, 2024
+
+Company Name: DEF Fabrication Inc.
+
+Contact Person: Alice Johnson
+
+Contact Email: alice.johnson@deffabrication.com
+
+Contact Phone: (555) 654-3210
+
+RFQ Number: RFQ-2024-003
+
+Submission Deadline: June 1, 2024
+
+Item Description:
+Material: Galvanized Steel Sheets
+
+Grade: ASTM A653
+Thickness: 0.075 inches (14 gauge)
+Width: 48 inches
+Length: 96 inches
+Quantity: 300 sheets
+Material: Aluminum Extrusions
+
+Grade: 6063-T5
+Profile: Square tube, 2 inches x 2 inches
+Wall Thickness: 0.125 inches
+Length: 12 feet
+Quantity: 100 extrusions
+Material: Brass Rods
+
+Grade: C36000
+Diameter: 1 inch
+Length: 6 feet
+Quantity: 50 rods
+Processing Services:
+Cutting:
+
+Laser cutting of galvanized steel sheets to specified shapes as per attached DXF files (see Attachment 1).
+Machining:
+
+CNC machining of aluminum extrusions to create specified holes and slots as per attached technical drawings (see Attachment 2).
+Finishing:
+
+Polishing of brass rods to a smooth finish.
+Delivery Requirements:
+Delivery Location: DEF Fabrication Inc., 456 Industrial Road, Techville, USA
+Delivery Date: August 1, 2024
+Shipping Method: FOB Destination
+Quality Requirements:
+Certification: Mill test reports (MTR) required for all materials.
+Inspection: Visual and dimensional inspection reports required.
+Additional Information:
+Payment Terms: Net 30 days
+Contract Duration: One-time purchase with potential for recurring orders based on performance and pricing.
+Instructions to Suppliers:
+Quotation Submission:
+
+Please submit your detailed quotation including itemized costs for materials and processing services.
+Include lead times for each item and service.
+Specify any minimum order quantities or other restrictions.
+Evaluation Criteria:
+
+Pricing
+Delivery time
+Quality assurance capabilities
+Previous experience with similar projects
+References from other customers
+Contact for Clarifications:
+
+For any questions regarding this RFQ, contact Alice Johnson at the above email or phone number.
+Submission:
+
+Email your quotation to alice.johnson@deffabrication.com with the subject line "RFQ-2024-003 Quotation Submission".
