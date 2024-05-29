@@ -89,7 +89,7 @@ import {
     AlertDialogTrigger,
 } from "@/app/components/ui/alert-dialog"
 
-import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT } from "@/lib/openai";
+import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT, QUOTE_GEN_PROMPT, getAIGeneratedQuote } from "@/lib/openai";
 import { createProducts } from "@/lib/firebase/seed";
 
 const links = [
@@ -225,16 +225,28 @@ export function GenQuoteModal(props) {
         message: '',
     });
 
+    const [products, setProducts] = useState([]);
+    // maybe only pull when needed.
+    
+    useEffect(() => {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                setProducts(Object.values(data));
+            });
+    }, []);
+
     async function generateQuote(event) {
         try {
             const isAValidRequestForQuote = await getAIAnswer(IS_RFQ_PROMPT, textareaValue);
 
             if (isAValidRequestForQuote === 'Yes') {
                 const rfqDetails = await getAIAnswer(GET_RFQ_DETAILS_PROMPT, textareaValue);
-
-                // check inventory
-                // generate quote
-                // send email
+                const generatedQuoteEmail = await getAIGeneratedQuote(QUOTE_GEN_PROMPT, rfqDetails, JSON.stringify(products));
+                
+                // TODO: 
+                // - create a quote
+                // - redirect the user to the new quote
             }
 
         } catch(err) {
@@ -380,6 +392,13 @@ export default function Quotes() {
                                         {text}
                                     </Link>
                                 ))}
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                                >
+                                    <LineChart className="h-5 w-5" />
+                                    Settings
+                                </Link>
                             </nav>
                         </SheetContent>
                     </Sheet>

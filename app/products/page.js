@@ -1,3 +1,8 @@
+'use client';
+
+import { useEffect, useState } from "react";
+
+
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -13,7 +18,13 @@ import {
     Search,
     Settings,
     ShoppingCart,
+    TextQuote,
     Users2,
+    ServerCog,
+    LoaderCircle,
+    GanttChart,
+    CircleX,
+    CircleCheck,
 } from "lucide-react"
 
 import { Badge } from "@/app/components/ui/badge"
@@ -66,7 +77,41 @@ import {
     TooltipTrigger,
 } from "@/app/components/ui/tooltip"
 
+const links = [
+    {
+        text: 'Dashboard',
+        link: '/',
+        Icon: Home,
+    },
+    {
+        text: 'Quotes',
+        link: '/quotes',
+        Icon: TextQuote,
+    },
+    {
+        text: 'Products',
+        link: '/products',
+        Icon: Package,
+        isActive: true,
+    },
+    {
+        text: 'Clients',
+        link: '/clients',
+        Icon: Users2,
+    },
+];
+
 export default function Products() {
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                setProducts(Object.values(data));
+            })
+    }, []);
+
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
             <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -78,80 +123,24 @@ export default function Products() {
                         <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
                         <span className="sr-only">Acme Inc</span>
                     </Link>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href="#"
-                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                                >
-                                    <Home className="h-5 w-5" />
-                                    <span className="sr-only">Dashboard</span>
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">Dashboard</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href="#"
-                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                                >
-                                    <ShoppingCart className="h-5 w-5" />
-                                    <span className="sr-only">Orders</span>
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">Orders</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href="#"
-                                    className="flex h-9 w-9 items-center justify-center bg-accent rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                                >
-                                    <Package className="h-5 w-5" />
-                                    <span className="sr-only">Products</span>
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">Products</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href="#"
-                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                                >
-                                    <Users2 className="h-5 w-5" />
-                                    <span className="sr-only">Customers</span>
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">Customers</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href="#"
-                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                                >
-                                    <LineChart className="h-5 w-5" />
-                                    <span className="sr-only">Analytics</span>
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">Analytics</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    {
+                        links.map(({ text, link, Icon, isActive }) => (
+                            <TooltipProvider key={text}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link
+                                            href={link}
+                                            className={`${isActive ? 'bg-accent' : ''} flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8`}
+                                        >
+                                            <Icon className="h-5 w-5" />
+                                            <span className="sr-only">{text}</span>
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right">{text}</TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ))
+                    }
                 </nav>
                 <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
                     <TooltipProvider>
@@ -188,34 +177,16 @@ export default function Products() {
                                     <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
                                     <span className="sr-only">Acme Inc</span>
                                 </Link>
-                                <Link
-                                    href="#"
-                                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                                >
-                                    <Home className="h-5 w-5" />
-                                    Dashboard
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                                >
-                                    <ShoppingCart className="h-5 w-5" />
-                                    Orders
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="flex items-center gap-4 px-2.5 text-foreground"
-                                >
-                                    <Package className="h-5 w-5" />
-                                    Products
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                                >
-                                    <Users2 className="h-5 w-5" />
-                                    Customers
-                                </Link>
+                                {links.map(({ text, link, isActive, Icon }, index) => (
+                                    <Link
+                                        key={`mobile-nav-${index}`}
+                                        href={link}
+                                        className={`flex items-center gap-4 px-2.5 ${isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        <Icon className="h-5 w-5" />
+                                        {text}
+                                    </Link>
+                                ))}
                                 <Link
                                     href="#"
                                     className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -326,9 +297,9 @@ export default function Products() {
                         <TabsContent value="drafts">
                             <Card x-chunk="dashboard-06-chunk-0">
                                 <CardHeader>
-                                    <CardTitle>Quotes</CardTitle>
+                                    <CardTitle>Products</CardTitle>
                                     <CardDescription>
-                                        Ai generated quotes.
+                                        Products list fetched from the ERP system
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
