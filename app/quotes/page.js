@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
+import _ from 'lodash';
 
 import Image from "next/image"
 import Link from "next/link"
@@ -93,6 +94,11 @@ import {
 import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT, QUOTE_GEN_PROMPT, getAIGeneratedQuote } from "@/lib/openai";
 import { createProducts } from "@/lib/firebase/seed";
 
+import GenQuoteModal from "../components/GenQuoteModal";
+
+const SENT_STATUS = 'Sent';
+const DRAFT_STATUS = 'Draft';
+
 const links = [
     {
         text: 'Dashboard',
@@ -120,11 +126,11 @@ const links = [
 const tabs = [
     {
         label: 'Drafts',
-        value: 'drafts',
+        value: DRAFT_STATUS,
     },
     {
-        label: 'Sent',
-        value: 'sent',
+        label: SENT_STATUS,
+        value: SENT_STATUS,
     },
 ];
 
@@ -148,34 +154,6 @@ const PENDING_STATE = 'pending';
 const ERROR_STATE = 'error';
 const COMPLETED_STATE = 'completed';
 
-const iconsPerState = {
-    [NOT_STARTED]: GanttChart,
-    [PENDING_STATE]: LoaderCircle,
-    [ERROR_STATE]: CircleX,
-    [COMPLETED_STATE]: CircleCheck,
-}
-
-
-const steps = [
-    {
-        label: "Checking if it's a valid RFQ",
-        state: PENDING_STATE
-
-    },
-    {
-        label: "Extracting RFQ details",
-        state: NOT_STARTED
-
-    },
-    {
-        label: "Checking inventory",
-        state: NOT_STARTED
-    },
-    {
-        label: "Generating quote",
-        state: NOT_STARTED
-    },
-];
 
 const breadcrumbs = [
     {
@@ -188,149 +166,10 @@ const breadcrumbs = [
     },
 ];
 
-function GenQuoteModal(props) {
-    const { onClick } = props;
-
-    const [quoteGenSteps, setQuoteGenSteps] = useState(steps);
-    const [textareaValue, setTextAreaValue] = useState("");
-    const [quoteGenState, setQuoteGenState] = useState({
-        isWorking: false,
-        message: '',
-    });
-    const [products, setProducts] = useState([]);
-    const router = useRouter();
-
-    useEffect(() => {
-        fetch('/api/products')
-            .then(response => response.json())
-            .then(data => {
-                setProducts(Object.values(data));
-            });
-    }, []);
-
-    async function generateQuote(event) {
-        try {
-            setQuoteGenState({
-                isWorking: true,
-                message: 'Generating quote...',
-            })
-            const isAValidRequestForQuote = await getAIAnswer(IS_RFQ_PROMPT, textareaValue);
-            setQuoteGenSteps(prevSteps => (
-                updateStepAtIndex(prevSteps, 0, COMPLETED_STATE)
-            ));
-
-            if (isAValidRequestForQuote === 'Yes') {
-                const rfqDetails = await getAIAnswer(GET_RFQ_DETAILS_PROMPT, textareaValue);
-                const jsonRequestForQuoteDetails = JSON.parse(rfqDetails);
-
-                setQuoteGenSteps(prevSteps => (
-                    updateStepAtIndex(prevSteps, 1, COMPLETED_STATE)
-                ));
-                setQuoteGenSteps(prevSteps => (
-                    updateStepAtIndex(prevSteps, 2, COMPLETED_STATE) // inventory is already fetched
-                ));
-
-                const generatedQuoteEmail = await getAIGeneratedQuote(QUOTE_GEN_PROMPT, rfqDetails, JSON.stringify(products));
-
-                setQuoteGenSteps(prevSteps => (
-                    updateStepAtIndex(prevSteps, 3, COMPLETED_STATE)
-                ));
-
-                const date = new Date();
-                const contactPerson = jsonRequestForQuoteDetails['Contact Person'] || {};
-                const company = jsonRequestForQuoteDetails['Company Name'];
-
-                const newQuote = {
-                    name: `Quote for ${company}`,
-                    status: 'Draft',
-                    aiGeneratedEmail: generatedQuoteEmail,
-                    originalEmail: textareaValue,
-                    emailSubject: `Quotation for RFQ - ${company}`,
-                    contactPersonName: contactPerson['Name'],
-                    contactPersonEmail: contactPerson['Email'],
-                    company,
-                    date,
-                };
-
-                const response = await fetch('/api/quotes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newQuote),
-                });
-
-                const createdQuote = await response.json();
-
-                if (createdQuote.id) {
-                    router.push(`/quotes/${createdQuote.id}`);
-                }
-            }
-
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    const { isWorking, message } = quoteGenState;
-
-    return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button onClick={onClick} size="sm" className="h-8 gap-1">
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Generate Quote
-                    </span>
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="max-w-4xl">
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Generate quote from RFQ email</AlertDialogTitle>
-                </AlertDialogHeader>
-                <div>
-                    {isWorking
-                        ? (
-                            <ul>
-                                {quoteGenSteps.map(({ label, state }, index) => {
-                                    const Icon = iconsPerState[state];
-                                    return (
-                                        <li className="flex" key={`quote-step-${index}`}>
-                                            <Icon />
-                                            <span>{label}</span>
-                                        </li>
-                                    )
-                                })}
-                            </ul>
-                        )
-                        : (
-                            <Textarea
-                                value={textareaValue}
-                                onChange={(event) => setTextAreaValue(event.target.value)}
-                                className="min-h-36"
-                                placeholder="Paste the RFQ email content here" />
-                        )
-                    }
-                </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button onClick={(e) => generateQuote(e)} size="sm" className="h-8 gap-1">
-                        <TextQuote className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Generate Quote
-                        </span>
-                    </Button>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    )
-}
-
-
 export default function Quotes() {
-    const [shouldOpenGenQuoteModal, setShouldOpenGenQuoteModal] = useState(false);
-    const [shouldOpenQuoteDetails, setShouldOpenQuoteDetails] = useState(false);
     const [quotes, setQuotes] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState(DRAFT_STATUS);
 
     useEffect(() => {
         fetch('/api/quotes')
@@ -339,6 +178,19 @@ export default function Quotes() {
                 setQuotes(Object.values(data));
             });
     }, []);
+
+    const onChange = (e) => {
+        setSearchTerm(e.target.value);
+    }
+
+    const debouncedOnChange = _.debounce(onChange, 500);
+
+    const quotesToDisplay = quotes.filter(quote => {
+        if (!searchTerm) {
+            return quote?.status === activeTab;
+        }
+        return quote?.status === activeTab && quote.name.includes(searchTerm);
+    });
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -477,7 +329,7 @@ export default function Quotes() {
 
                 </header>
                 <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                    <Tabs defaultValue="drafts">
+                    <Tabs defaultValue={activeTab} onValueChange={(e) => setActiveTab(e)}>
                         <div className="flex items-center">
                             <TabsList>
                                 {tabs.map(({ label, value }, index) => (
@@ -485,100 +337,33 @@ export default function Quotes() {
                                 ))}
                             </TabsList>
                             <div className="ml-auto flex items-center gap-2">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm" className="h-8 gap-1">
-                                            <ListFilter className="h-3.5 w-3.5" />
-                                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                                Filter
-                                            </span>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuCheckboxItem checked>
-                                            Active
-                                        </DropdownMenuCheckboxItem>
-                                        <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
-                                        <DropdownMenuCheckboxItem>
-                                            Archived
-                                        </DropdownMenuCheckboxItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <GenQuoteModal
-                                    // router={router}
-                                    onClick={() => setShouldOpenGenQuoteModal(!shouldOpenGenQuoteModal)} size="sm" className="h-8 gap-1"
-                                />
+                                <GenQuoteModal />
                             </div>
                         </div>
-                        <TabsContent value="drafts">
+                        <TabsContent value={DRAFT_STATUS}>
                             <Card x-chunk="dashboard-06-chunk-0">
-                                <CardHeader>
-                                    <CardTitle>Quotes</CardTitle>
-                                    <CardDescription className="py-4">
-                                        <div className="relative flex-1 md:grow-0">
-                                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                type="search"
-                                                placeholder="Search Ai generated quotes"
-                                                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[536px]"
-                                            />
-                                        </div>
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                {columns.map(({ label }, index) => (
-                                                    <TableHead key={`column-${index}`} className="hidden sm:table-cell">
-                                                        {label}
-                                                    </TableHead>
-                                                ))}
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {quotes.map(({ id, date, name, client, total }, index) => (
-                                                <TableRow key={`quote-${index}`}>
-                                                    <TableCell className="hidden md:table-cell">
-                                                        {date}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {name}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {client}
-                                                    </TableCell>
-                                                    <TableCell className="hidden md:table-cell">
-                                                        {total}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button
-                                                                    aria-haspopup="true"
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                >
-                                                                    <MoreHorizontal className="h-4 w-4" />
-                                                                    <span className="sr-only">Toggle menu</span>
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                                <DropdownMenuItem>
-                                                                    <Link href={`/quotes/${id}`}>Edit</Link>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </CardContent>
+                                <ListerHeader
+                                    heading="Quotes"
+                                    description="Search Ai generated quotes"
+                                    onChange={debouncedOnChange}
+                                />
+                                <ListerBody
+                                    columns={columns}
+                                    list={quotesToDisplay}
+                                />
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value={SENT_STATUS}>
+                            <Card x-chunk="dashboard-06-chunk-0">
+                                <ListerHeader
+                                    onChange={debouncedOnChange}
+                                    heading="Quotes"
+                                    description="Search sent quotes"
+                                />
+                                <ListerBody
+                                    columns={columns}
+                                    list={quotesToDisplay}
+                                />
                             </Card>
                         </TabsContent>
                     </Tabs>
@@ -588,18 +373,85 @@ export default function Quotes() {
     )
 }
 
-function updateStepAtIndex(steps, index, state) {
-    const step = steps[index];
-    step.state = state;
+function ListerHeader(props) {
+    const {
+        heading,
+        description,
+        onChange,
+    } = props;
 
-    const stepsCopy = [...steps];
-    stepsCopy.splice(index, 1, step);
+    return (
+        <CardHeader>
+            <CardTitle>{heading}</CardTitle>
+            <CardDescription className="py-4">
+                <div className="relative flex-1 md:grow-0">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        onChange={(e) => onChange(e)}
+                        placeholder={description}
+                        className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[536px]"
+                    />
+                </div>
+            </CardDescription>
+        </CardHeader>
+    )
+}
 
-    if (index !== steps.length - 1) {
-        const nextStep = steps[index + 1];
-        nextStep.state = PENDING_STATE;
-        stepsCopy.splice(index + 1, 1, nextStep);
-    }
-
-    return stepsCopy;
+function ListerBody(props) {
+    const { columns, list } = props;
+    return (
+        <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        {columns.map(({ label }, index) => (
+                            <TableHead key={`column-${index}`} className="hidden sm:table-cell">
+                                {label}
+                            </TableHead>
+                        ))}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {list.map(({ id, date, name, client, total }, index) => (
+                        <TableRow key={`quote-${index}`}>
+                            <TableCell className="hidden md:table-cell">
+                                {date}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                                {name}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                                {client}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                                {total}
+                            </TableCell>
+                            <TableCell>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            aria-haspopup="true"
+                                            size="icon"
+                                            variant="ghost"
+                                        >
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Toggle menu</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuItem>
+                                            <Link href={`/quotes/${id}`}>Edit</Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+    )
 }
