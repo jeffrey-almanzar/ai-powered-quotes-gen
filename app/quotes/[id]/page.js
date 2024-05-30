@@ -136,14 +136,16 @@ const fields = {
 export default function QuoteDetails(props) {
     const { params } = props;
     const quoteId = params.id;
-
-    const [textareaValue, setTextAreaValue] = useState("");
     const [quoteData, setQuoteData] = useState({});
+    const [textareaValue, setTextAreaValue] = useState('');
 
     useEffect(() => {
         fetch(`/api/quotes/${quoteId}`)
             .then(response => response.json())
-            .then(data => setQuoteData(data))
+            .then(data => {
+                setQuoteData(data)
+                setTextAreaValue(data.aiGeneratedEmail || '')
+            })
     }, []);
 
     const {
@@ -155,6 +157,11 @@ export default function QuoteDetails(props) {
         clientName,
         company,
     } = quoteData;
+
+    const messageForStatus = {
+        'Draft': 'Ai generated quote',
+        'Sent': 'This quote has been emailed to the client',
+    }
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -298,7 +305,7 @@ export default function QuoteDetails(props) {
                                 </span>
                             </CardTitle>
                             <CardDescription>
-                                <span className="inline-block pt-3">Ai generated quotes.</span>
+                                <span className="inline-block pt-3">{messageForStatus[status]}</span>
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -316,7 +323,7 @@ export default function QuoteDetails(props) {
                                 <AccordionItem value="item-2">
                                     <AccordionTrigger>Original RFQ Input</AccordionTrigger>
                                     <AccordionContent>
-                                        Yes. It adheres to the WAI-ARIA design pattern.
+                                    <pre>{originalEmail}</pre>
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>

@@ -16,6 +16,8 @@ export async function POST(request) {
     const newRecord = await request.json();
     const dbRef = ref(database, LIST_NAME);
     const newRecordRef = push(dbRef);
-    await set(newRecordRef, {...newRecord, id: newRecordRef.key});
-    return NextResponse.json({ message: 'Record created successfully' });
+    const newRecordWithId = { ...newRecord, id: newRecordRef.key };
+
+    await set(newRecordRef, newRecordWithId);
+    return NextResponse.json({ ...newRecordWithId });
 }

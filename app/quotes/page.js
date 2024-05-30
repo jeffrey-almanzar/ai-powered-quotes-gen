@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
 import Image from "next/image"
 import Link from "next/link"
@@ -122,10 +123,6 @@ const tabs = [
         value: 'drafts',
     },
     {
-        label: 'In Review',
-        value: 'in-review',
-    },
-    {
         label: 'Sent',
         value: 'sent',
     },
@@ -180,21 +177,18 @@ const steps = [
     },
 ];
 
-export function GenQuoteModal(props) {
-    const {
-        onClick
-    } = props;
+function GenQuoteModal(props) {
+    const { onClick } = props;
 
+    const [quoteGenSteps, setQuoteGenSteps] = useState(steps);
     const [textareaValue, setTextAreaValue] = useState("");
-
     const [quoteGenState, setQuoteGenState] = useState({
         isWorking: false,
         message: '',
     });
-
     const [products, setProducts] = useState([]);
-    // maybe only pull when needed.
-    
+    const router = useRouter();
+
     useEffect(() => {
         fetch('/api/products')
             .then(response => response.json())
@@ -205,18 +199,62 @@ export function GenQuoteModal(props) {
 
     async function generateQuote(event) {
         try {
+            setQuoteGenState({
+                isWorking: true,
+                message: 'Generating quote...',
+            })
             const isAValidRequestForQuote = await getAIAnswer(IS_RFQ_PROMPT, textareaValue);
+            setQuoteGenSteps(prevSteps => (
+                updateStepAtIndex(prevSteps, 0, COMPLETED_STATE)
+            ));
 
             if (isAValidRequestForQuote === 'Yes') {
                 const rfqDetails = await getAIAnswer(GET_RFQ_DETAILS_PROMPT, textareaValue);
+                const jsonRequestForQuoteDetails = JSON.parse(rfqDetails);
+
+                setQuoteGenSteps(prevSteps => (
+                    updateStepAtIndex(prevSteps, 1, COMPLETED_STATE)
+                ));
+                setQuoteGenSteps(prevSteps => (
+                    updateStepAtIndex(prevSteps, 2, COMPLETED_STATE) // inventory is already fetched
+                ));
+
                 const generatedQuoteEmail = await getAIGeneratedQuote(QUOTE_GEN_PROMPT, rfqDetails, JSON.stringify(products));
-                
-                // TODO: 
-                // - create a quote
-                // - redirect the user to the new quote
+
+                setQuoteGenSteps(prevSteps => (
+                    updateStepAtIndex(prevSteps, 3, COMPLETED_STATE)
+                ));
+
+                const date = new Date();
+                const contactPerson = jsonRequestForQuoteDetails['Contact Person'];
+                const company = jsonRequestForQuoteDetails['Company Name'];
+
+                const newQuote = {
+                    name: `Quote for ${company}`,
+                    status: 'Draft',
+                    aiGeneratedEmail: generatedQuoteEmail,
+                    originalEmail: textareaValue,
+                    company,
+                    contactPerson,
+                    date,
+                };
+
+                const response = await fetch('/api/quotes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newQuote),
+                });
+
+                const createdQuote = await response.json();
+
+                if (createdQuote.id) {
+                    router.push(`/quotes/${createdQuote.id}`);
+                }
             }
 
-        } catch(err) {
+        } catch (err) {
             console.log(err);
         }
     }
@@ -236,34 +274,33 @@ export function GenQuoteModal(props) {
             <AlertDialogContent className="max-w-4xl">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Generate quote from RFQ email</AlertDialogTitle>
-                    {/* <AlertDialogDescription>
-                        Paste the RFQ email content below
-                    </AlertDialogDescription> */}
                 </AlertDialogHeader>
                 <div>
-                    {isWorking 
-                     ? (
-                        <ul>
-                            {steps.map(({label, state}, index) => {
-                            const Icon = iconsPerState[state];
-                            return (
-                                <li className="flex" key={`quote-step-${index}`}>
-                                    <Icon />
-                                    <span>{label}</span>
-                                </li>
-                            )
-                        })}
-                        </ul>
-                     )
-                     : (
-<Textarea value={textareaValue} onChange={(event) => setTextAreaValue(event.target.value)} className="min-h-36" placeholder="Paste the RFQ email content here" />
-                     )
+                    {isWorking
+                        ? (
+                            <ul>
+                                {quoteGenSteps.map(({ label, state }, index) => {
+                                    const Icon = iconsPerState[state];
+                                    return (
+                                        <li className="flex" key={`quote-step-${index}`}>
+                                            <Icon />
+                                            <span>{label}</span>
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        )
+                        : (
+                            <Textarea
+                                value={textareaValue}
+                                onChange={(event) => setTextAreaValue(event.target.value)}
+                                className="min-h-36"
+                                placeholder="Paste the RFQ email content here" />
+                        )
                     }
-                    
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    {/* <AlertDialogAction onClick={(e) => generateQuote(e)}>Generate</AlertDialogAction> */}
                     <Button onClick={(e) => generateQuote(e)} size="sm" className="h-8 gap-1">
                         <TextQuote className="h-3.5 w-3.5" />
                         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -395,38 +432,33 @@ export default function Quotes() {
                         </BreadcrumbList>
                     </Breadcrumb>
                     <div className="relative ml-auto flex-1 md:grow-0">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search..."
-                            className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-                        />
-                    </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="overflow-hidden rounded-full"
-                            >
-                                <Image
-                                    src="/placeholder-user.jpg"
-                                    width={36}
-                                    height={36}
-                                    alt="Avatar"
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
                                     className="overflow-hidden rounded-full"
-                                />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
-                            <DropdownMenuItem>Support</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Logout</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                >
+                                    <Image
+                                        src="/placeholder-user.jpg"
+                                        width={36}
+                                        height={36}
+                                        alt="Avatar"
+                                        className="overflow-hidden rounded-full"
+                                    />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>Settings</DropdownMenuItem>
+                                <DropdownMenuItem>Support</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>Logout</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
                 </header>
                 <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
                     <Tabs defaultValue="drafts">
@@ -458,13 +490,8 @@ export default function Quotes() {
                                         </DropdownMenuCheckboxItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                                <Button size="sm" variant="outline" className="h-8 gap-1">
-                                    <File className="h-3.5 w-3.5" />
-                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Export
-                                    </span>
-                                </Button>
                                 <GenQuoteModal
+                                    // router={router}
                                     onClick={() => setShouldOpenGenQuoteModal(!shouldOpenGenQuoteModal)} size="sm" className="h-8 gap-1"
                                 />
                             </div>
@@ -473,8 +500,15 @@ export default function Quotes() {
                             <Card x-chunk="dashboard-06-chunk-0">
                                 <CardHeader>
                                     <CardTitle>Quotes</CardTitle>
-                                    <CardDescription>
-                                        <span className="inline-block pt-3">Ai generated quotes.</span>
+                                    <CardDescription className="py-4">
+                                        <div className="relative flex-1 md:grow-0">
+                                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                type="search"
+                                                placeholder="Search Ai generated quotes"
+                                                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[536px]"
+                                            />
+                                        </div>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -529,12 +563,6 @@ export default function Quotes() {
                                         </TableBody>
                                     </Table>
                                 </CardContent>
-                                <CardFooter>
-                                    <div className="text-xs text-muted-foreground">
-                                        Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                                        products
-                                    </div>
-                                </CardFooter>
                             </Card>
                         </TabsContent>
                     </Tabs>
@@ -542,4 +570,20 @@ export default function Quotes() {
             </div>
         </div>
     )
+}
+
+function updateStepAtIndex(steps, index, state) {
+    const step = steps[index];
+    step.state = state;
+
+    const stepsCopy = [...steps];
+    stepsCopy.splice(index, 1, step);
+
+    if (index !== steps.length - 1) {
+        const nextStep = steps[index + 1];
+        nextStep.state = PENDING_STATE;
+        stepsCopy.splice(index + 1, 1, nextStep);
+    }
+
+    return stepsCopy;
 }
