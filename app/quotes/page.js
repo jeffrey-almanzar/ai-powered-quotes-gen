@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
 import Image from "next/image"
@@ -174,6 +174,17 @@ const steps = [
     {
         label: "Generating quote",
         state: NOT_STARTED
+    },
+];
+
+const breadcrumbs = [
+    {
+        name: 'Dashboard',
+        link: '/'
+    },
+    {
+        name: 'Quotes',
+        link: '/Quotes'
     },
 ];
 
@@ -416,21 +427,24 @@ export default function Quotes() {
                     </Sheet>
                     <Breadcrumb className="hidden md:flex">
                         <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink asChild>
-                                    <Link href="/">Dashboard</Link>
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbLink asChild>
-                                    <Link href="#">Quotes</Link>
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>All Quotes</BreadcrumbPage>
-                            </BreadcrumbItem>
+                            {breadcrumbs.map(({ name, link }, index) => {
+                                const isNotLastChild = index < breadcrumbs.length - 1;
+                                return (
+                                    <React.Fragment key={index} >
+                                        <BreadcrumbItem>
+                                            {isNotLastChild
+                                                ? (
+                                                    <BreadcrumbLink asChild={isNotLastChild} >
+                                                        <Link href={link}>{name}</Link>
+                                                    </BreadcrumbLink>
+                                                )
+                                                : <BreadcrumbPage>{name}</BreadcrumbPage>
+                                            }
+                                        </BreadcrumbItem>
+                                        {isNotLastChild && <BreadcrumbSeparator />}
+                                    </React.Fragment>
+                                )
+                            })}
                         </BreadcrumbList>
                     </Breadcrumb>
                     <div className="relative ml-auto flex-1 md:grow-0">
