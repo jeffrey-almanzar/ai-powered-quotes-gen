@@ -13,6 +13,8 @@ import {
     Package2,
     PanelLeft,
     PlusCircle,
+    Mails,
+    Save,
     Search,
     Settings,
     ShoppingCart,
@@ -77,6 +79,8 @@ import {
 
 import { Textarea } from "@/app/components/ui/textarea"
 
+import { Toaster } from "@/app/components/ui/sonner"
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -95,6 +99,8 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/app/components/ui/accordion"
+
+import { toast } from "sonner"
 
 import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT, QUOTE_GEN_PROMPT, getAIGeneratedQuote } from "@/lib/openai";
 import { createProducts } from "@/lib/firebase/seed";
@@ -123,28 +129,18 @@ const links = [
     },
 ];
 
-const fields = {
-    name: 'sample',
-    status: 'Draft',
-    originalEmail: '',
-    aiGeneratedEmail: '',
-    clientEmail: '',
-    clientName: '',
-    company: '',
-}
-
 export default function QuoteDetails(props) {
     const { params } = props;
     const quoteId = params.id;
+
     const [quoteData, setQuoteData] = useState({});
-    const [textareaValue, setTextAreaValue] = useState('');
 
     useEffect(() => {
         fetch(`/api/quotes/${quoteId}`)
             .then(response => response.json())
             .then(data => {
                 setQuoteData(data)
-                setTextAreaValue(data.aiGeneratedEmail || '')
+                // setTextAreaValue(data.aiGeneratedEmail || '')
             })
     }, []);
 
@@ -153,14 +149,40 @@ export default function QuoteDetails(props) {
         status,
         originalEmail,
         aiGeneratedEmail,
-        clientEmail,
-        clientName,
+        emailSubject,
+        contactPersonName,
+        contactPersonEmail,
+        date,
         company,
     } = quoteData;
 
-    const messageForStatus = {
-        'Draft': 'Ai generated quote',
-        'Sent': 'This quote has been emailed to the client',
+    function sendEmail() {
+        fetch(`/api/quotes/${quoteId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({...quoteData, status: 'Sent'}),
+        })
+            .then(response => response.json())
+            .then(data => {
+                toast("Email sent");
+                //setQuoteData(preData => ({preData, status: 'Sent'}))
+            })
+    }
+
+    function saveChanges() {
+        fetch(`/api/quotes/${quoteId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(quoteData),
+        })
+            .then(response => response.json())
+            .then(data => {
+                toast("Changes saved")
+            })
     }
 
     return (
@@ -299,35 +321,85 @@ export default function QuoteDetails(props) {
                     <Card x-chunk="dashboard-06-chunk-0">
                         <CardHeader>
                             <CardTitle>
-                                <span className="flex items-center">
-                                    <span className="pr-4">{name}</span>
-                                    <Badge variant="secondary">Draft</Badge>
-                                </span>
+                                <div className="flex ">
+                                    <span className="flex items-center">
+                                        <span className="pr-4">{name}</span>
+                                        <Badge variant="secondary">{status}</Badge>
+                                    </span>
+                                    <Button onClick={() => saveChanges()} size="sm" className="h-8 gap-1 ml-auto">
+                                        <Save className="h-3.5 w-3.5" />
+                                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                            Save changes
+                                        </span>
+                                    </Button>
+
+                                    <Toaster position="top-center" />
+                                </div>
                             </CardTitle>
-                            <CardDescription>
-                                <span className="inline-block pt-3">{messageForStatus[status]}</span>
-                            </CardDescription>
                         </CardHeader>
                         <CardContent>
-
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="item-1">
                                     <AccordionTrigger>Ai Generated Quote Email</AccordionTrigger>
                                     <AccordionContent>
-                                        <Textarea value={textareaValue} onChange={(event) => setTextAreaValue(event.target.value)} className="min-h-36" placeholder="Paste the RFQ email content here" />
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            sendEmail();
+                                        }}>
+                                            <label className="inline-block pb-2 text-muted-foreground">Client email</label>
+                                            <Input
+                                                value={contactPersonEmail}
+                                                onChange={(e) => {
+                                                    setQuoteData(prevData => ({
+                                                        ...prevData,
+                                                        contactPersonEmail: e.target.value,
+                                                    }))
+                                                }}
+                                            />
+
+                                            <label className="inline-block pb-2 pt-5 text-muted-foreground">Subject</label>
+                                            <Input
+                                                value={emailSubject}
+                                                onChange={(e) => {
+                                                    setQuoteData(prevData => ({
+                                                        ...prevData,
+                                                        emailSubject: e.target.value,
+                                                    }))
+                                                }}
+                                            />
+
+                                            <label className="inline-block pb-2 pt-5 text-muted-foreground">Content</label>
+                                            <Textarea
+                                                value={aiGeneratedEmail}
+                                                onChange={(e) => {
+                                                    setQuoteData(prevData => ({
+                                                        ...prevData,
+                                                        aiGeneratedEmail: e.target.value,
+                                                    }))
+                                                }}
+                                                className="min-h-52"
+                                            />
+
+                                            <div className="py-5">
+                                                <Button size="sm" className="h-8 gap-1">
+                                                    <Mails className="h-3.5 w-3.5" />
+                                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                                        Send email
+                                                    </span>
+                                                </Button>
+                                            </div>
+                                        </form>
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>
-
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="item-2">
                                     <AccordionTrigger>Original RFQ Input</AccordionTrigger>
                                     <AccordionContent>
-                                    <pre>{originalEmail}</pre>
+                                        <pre>{originalEmail}</pre>
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>
-
                         </CardContent>
                     </Card>
                 </main>

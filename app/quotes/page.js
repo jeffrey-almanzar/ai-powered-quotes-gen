@@ -226,7 +226,7 @@ function GenQuoteModal(props) {
                 ));
 
                 const date = new Date();
-                const contactPerson = jsonRequestForQuoteDetails['Contact Person'];
+                const contactPerson = jsonRequestForQuoteDetails['Contact Person'] || {};
                 const company = jsonRequestForQuoteDetails['Company Name'];
 
                 const newQuote = {
@@ -234,8 +234,10 @@ function GenQuoteModal(props) {
                     status: 'Draft',
                     aiGeneratedEmail: generatedQuoteEmail,
                     originalEmail: textareaValue,
+                    emailSubject: `Quotation for RFQ - ${company}`,
+                    contactPersonName: contactPerson['Name'],
+                    contactPersonEmail: contactPerson['Email'],
                     company,
-                    contactPerson,
                     date,
                 };
 
