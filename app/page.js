@@ -203,25 +203,15 @@ export default function HomePage() {
               </nav>
             </SheetContent>
           </Sheet>
-          {/* <Breadcrumb className="hidden md:flex">
+          <Breadcrumb className="hidden md:flex">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href="/">Dashboard</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="#">Quotes</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>All Quotes</BreadcrumbPage>
-              </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb> */}
+          </Breadcrumb>
           <div className="relative ml-auto flex-1 md:grow-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -254,8 +244,32 @@ export default function HomePage() {
 
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <h2>Quotes</h2>
-          <h2>Inventory</h2>
+          <Card x-chunk="dashboard-06-chunk-0">
+            <CardHeader>
+              <CardTitle>
+                Quotes
+              </CardTitle>
+              <CardDescription>
+                <span className="inline-block pt-3">Ai generated quotes.</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+
+            </CardContent>
+          </Card>
+          <Card x-chunk="dashboard-06-chunk-0">
+            <CardHeader>
+              <CardTitle>
+                Products
+              </CardTitle>
+              <CardDescription>
+                <span className="inline-block pt-3">Ai generated quotes.</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+
+            </CardContent>
+          </Card>
         </main>
       </div>
     </div>

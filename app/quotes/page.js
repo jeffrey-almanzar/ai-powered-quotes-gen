@@ -146,39 +146,6 @@ const columns = [
     },
 ];
 
-const quotes = [
-    {
-        date: '2023-07-12',
-        name: 'Some quote name',
-        client: 'Test Company',
-        total: '$90,000',
-    },
-    {
-        date: '2023-07-12',
-        name: 'Some quote name',
-        client: 'Test Company',
-        total: '$90,000',
-    },
-    {
-        date: '2023-07-12',
-        name: 'Some quote name',
-        client: 'Test Company',
-        total: '$90,000',
-    },
-    {
-        date: '2023-07-12',
-        name: 'Some quote name',
-        client: 'Test Company',
-        total: '$90,000',
-    },
-    {
-        date: '2023-07-12',
-        name: 'Some quote name',
-        client: 'Test Company',
-        total: '$90,000',
-    },
-];
-
 const NOT_STARTED = 'no-started';
 const PENDING_STATE = 'pending';
 const ERROR_STATE = 'error';
@@ -256,10 +223,6 @@ export function GenQuoteModal(props) {
 
     const { isWorking, message } = quoteGenState;
 
-    // useEffect(() => {
-    //     createProducts().then(() => console.log("created"))
-    // }, [])
-
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -316,6 +279,16 @@ export function GenQuoteModal(props) {
 
 export default function Quotes() {
     const [shouldOpenGenQuoteModal, setShouldOpenGenQuoteModal] = useState(false);
+    const [shouldOpenQuoteDetails, setShouldOpenQuoteDetails] = useState(false);
+    const [quotes, setQuotes] = useState([]);
+
+    useEffect(() => {
+        fetch('/api/quotes')
+            .then(response => response.json())
+            .then(data => {
+                setQuotes(Object.values(data));
+            });
+    }, []);
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -456,9 +429,6 @@ export default function Quotes() {
                     </DropdownMenu>
                 </header>
                 <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                    {shouldOpenGenQuoteModal && (
-                        <p>Yes render it</p>
-                    )}
                     <Tabs defaultValue="drafts">
                         <div className="flex items-center">
                             <TabsList>
@@ -519,7 +489,7 @@ export default function Quotes() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {quotes.map(({ date, name, client, total }, index) => (
+                                            {quotes.map(({ id, date, name, client, total }, index) => (
                                                 <TableRow key={`quote-${index}`}>
                                                     <TableCell className="hidden md:table-cell">
                                                         {date}
@@ -547,7 +517,9 @@ export default function Quotes() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                                <DropdownMenuItem>
+                                                                    <Link href={`/quotes/${id}`}>Edit</Link>
+                                                                </DropdownMenuItem>
                                                                 <DropdownMenuItem>Delete</DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
