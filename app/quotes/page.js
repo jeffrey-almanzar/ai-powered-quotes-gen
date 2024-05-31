@@ -75,24 +75,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/app/components/ui/tooltip"
-
-import { Textarea } from "@/app/components/ui/textarea"
-
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/app/components/ui/alert-dialog"
-
-import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT, QUOTE_GEN_PROMPT, getAIGeneratedQuote } from "@/lib/openai";
-import { createProducts } from "@/lib/firebase/seed";
+} from "@/app/components/ui/tooltip";
 
 import GenQuoteModal from "../components/GenQuoteModal";
 
@@ -178,6 +161,14 @@ export default function Quotes() {
                 setQuotes(Object.values(data));
             });
     }, []);
+
+    const onDelete = (id) => {
+        fetch(`/api/quotes/${id}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                setQuotes(prevQuotes => prevQuotes.filter(quote => quote.id !== id))
+            });
+    }
 
     const onChange = (e) => {
         setSearchTerm(e.target.value);
@@ -350,6 +341,7 @@ export default function Quotes() {
                                 <ListerBody
                                     columns={columns}
                                     list={quotesToDisplay}
+                                    onDelete={onDelete}
                                 />
                             </Card>
                         </TabsContent>
@@ -363,6 +355,7 @@ export default function Quotes() {
                                 <ListerBody
                                     columns={columns}
                                     list={quotesToDisplay}
+                                    onDelete={onDelete}
                                 />
                             </Card>
                         </TabsContent>
@@ -399,7 +392,7 @@ function ListerHeader(props) {
 }
 
 function ListerBody(props) {
-    const { columns, list } = props;
+    const { columns, list, onDelete } = props;
     return (
         <CardContent>
             <Table>
@@ -442,9 +435,9 @@ function ListerBody(props) {
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                         <DropdownMenuItem>
-                                            <Link href={`/quotes/${id}`}>Edit</Link>
+                                            <Link className="inline-block w-full" href={`/quotes/${id}`}>Edit</Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => onDelete(id)}>Delete</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
