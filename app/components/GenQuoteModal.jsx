@@ -129,12 +129,11 @@ const iconsPerState = {
 
 
 export default function GenQuoteModal(props) {
-    const { onClick } = props;
-
     const [quoteGenSteps, setQuoteGenSteps] = useState(steps);
     const [textareaValue, setTextAreaValue] = useState("");
     const [quoteGenState, setQuoteGenState] = useState({
         isWorking: false,
+        error: false,
         message: '',
     });
     const [products, setProducts] = useState([]);
@@ -152,7 +151,7 @@ export default function GenQuoteModal(props) {
         try {
             setQuoteGenState({
                 isWorking: true,
-                message: 'Generating quote...',
+                message: 'Generating quote: ',
             })
             const isAValidRequestForQuote = await getAIAnswer(IS_RFQ_PROMPT, textareaValue);
             setQuoteGenSteps(prevSteps => (
@@ -205,6 +204,12 @@ export default function GenQuoteModal(props) {
                 if (createdQuote.id) {
                     router.push(`/quotes/${createdQuote.id}`);
                 }
+            } else {
+                setQuoteGenState({
+                    isWorking: false,
+                    error: true,
+                    message: 'The input is not a request for quote (RFQ). Please try again.',
+                })
             }
 
         } catch (err) {
@@ -212,7 +217,7 @@ export default function GenQuoteModal(props) {
         }
     }
 
-    const { isWorking, message } = quoteGenState;
+    const { isWorking, error, message } = quoteGenState;
 
     return (
         <AlertDialog>
@@ -229,8 +234,9 @@ export default function GenQuoteModal(props) {
                     <AlertDialogTitle>Generate quote from RFQ email</AlertDialogTitle>
                 </AlertDialogHeader>
                 <div>
-                    {isWorking
-                        ? (
+                    {isWorking && (
+                        <React.Fragment>
+                            <p className="pb-2">{message}</p>
                             <ul>
                                 {quoteGenSteps.map(({ label, state }, index) => {
                                     const Icon = iconsPerState[state];
@@ -242,18 +248,19 @@ export default function GenQuoteModal(props) {
                                     )
                                 })}
                             </ul>
-                        )
-                        : (
-                            <Textarea
-                                value={textareaValue}
-                                onChange={(event) => setTextAreaValue(event.target.value)}
-                                className="min-h-36"
-                                placeholder="Paste the RFQ email content here" />
-                        )
-                    }
+                        </React.Fragment>
+                    )}
+                    {error && <p className="text-red-600 pb-2">{message}</p>}
+                    {!isWorking && (
+                        <Textarea
+                            value={textareaValue}
+                            onChange={(event) => setTextAreaValue(event.target.value)}
+                            className="min-h-36"
+                            placeholder="Paste the RFQ email content here" />
+                    )}
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className="h-8">Cancel</AlertDialogCancel>
                     <Button onClick={(e) => generateQuote(e)} size="sm" className="h-8 gap-1">
                         <TextQuote className="h-3.5 w-3.5" />
                         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
