@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-import Image from "next/image"
-import Link from "next/link"
 import {
     File,
     Home,
@@ -26,57 +24,8 @@ import {
     CircleCheck,
 } from "lucide-react"
 
-import { Badge } from "@/app/components/ui/badge"
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/app/components/ui/breadcrumb"
-import { Button } from "@/app/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/app/components/ui/card"
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/app/components/ui/dropdown-menu"
-import { Input } from "@/app/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/app/components/ui/sheet"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/app/components/ui/table"
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/app/components/ui/tabs"
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/app/components/ui/tooltip"
-
-import { Textarea } from "@/app/components/ui/textarea"
+import { Button } from "@/app/components/ui/button";
+import { Textarea } from "@/app/components/ui/textarea";
 
 import {
     AlertDialog,
@@ -91,7 +40,6 @@ import {
 } from "@/app/components/ui/alert-dialog"
 
 import getAIAnswer, { IS_RFQ_PROMPT, GET_RFQ_DETAILS_PROMPT, QUOTE_GEN_PROMPT, getAIGeneratedQuote } from "@/lib/openai";
-import { createProducts } from "@/lib/firebase/seed";
 
 const NOT_STARTED = 'no-started';
 const PENDING_STATE = 'pending';
@@ -102,12 +50,10 @@ const steps = [
     {
         label: "Checking if it's a valid RFQ",
         state: PENDING_STATE
-
     },
     {
         label: "Extracting RFQ details",
         state: NOT_STARTED
-
     },
     {
         label: "Checking inventory",
@@ -119,14 +65,14 @@ const steps = [
     },
 ];
 
+const SpinnerIcon = (props) => <LoaderCircle className="animate-spin w-5 mr-2" {...props} />;
+
 const iconsPerState = {
-    [NOT_STARTED]: GanttChart,
-    [PENDING_STATE]: LoaderCircle,
-    [ERROR_STATE]: CircleX,
-    [COMPLETED_STATE]: CircleCheck,
+    [NOT_STARTED]: (props) => <GanttChart className="mr-2" {...props} />,
+    [PENDING_STATE]: SpinnerIcon,
+    [ERROR_STATE]: (props) => <CircleX className="mr-2 w-5" {...props} />,
+    [COMPLETED_STATE]: (props) => <CircleCheck className="mr-2 w-5" {...props} />,
 }
-
-
 
 export default function GenQuoteModal(props) {
     const [quoteGenSteps, setQuoteGenSteps] = useState(steps);
@@ -260,9 +206,9 @@ export default function GenQuoteModal(props) {
                     )}
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel className="h-8">Cancel</AlertDialogCancel>
-                    <Button onClick={(e) => generateQuote(e)} size="sm" className="h-8 gap-1">
-                        <TextQuote className="h-3.5 w-3.5" />
+                    {!isWorking && <AlertDialogCancel className="h-8">Cancel</AlertDialogCancel>}
+                    <Button onClick={(e) => !isWorking && generateQuote(e)} size="sm" className={`h-8 gap-1 ${isWorking ? 'opacity-50' : ''}`}>
+                        {isWorking ? <SpinnerIcon className="animate-spin h-3.5 w-3.5" /> : <TextQuote className="h-3.5 w-3.5" />}
                         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                             Generate Quote
                         </span>
