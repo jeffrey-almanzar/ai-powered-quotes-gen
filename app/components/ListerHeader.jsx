@@ -76,7 +76,7 @@ export default function ListerHeader(props) {
         <CardHeader>
             <CardTitle>{heading}</CardTitle>
             <CardDescription className="py-4">
-                <div className="relative flex-1 md:grow-0">
+                <span className="relative block flex-1 md:grow-0">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
@@ -84,7 +84,7 @@ export default function ListerHeader(props) {
                         placeholder={description}
                         className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[536px]"
                     />
-                </div>
+                </span>
             </CardDescription>
         </CardHeader>
     )
