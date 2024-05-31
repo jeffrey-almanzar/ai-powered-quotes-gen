@@ -38,6 +38,42 @@ Made a simple system design to get an idea about how the complete system is goin
     - The most popular AI tool in the last few months/years  
 - Email Sender: SendGrid
     - I've used it on other projects, very straightforward  
+### 5. User Interface Design and Implementation
+TODO
 
 ## Running it locally 
-TODO
+
+Requirements:
+- Open AI API key
+- Firebase credentials
+- SendGrid API key
+
+Steps:
+- Clone this repo
+- Cd into the folder and run `npm install`
+- Use `.env.example` to create a `.env.local` file, and set the expected env variables
+- Create initial data:
+  - Run the `createQuotes` and `createProducts` functions defined here: https://github.com/Jeffrey-A/quotes-gen/blob/main/lib/firebase/seed.js
+  - I didn't have time to set this up properly, if you try to run it with node (`node lib/firebase/seed.j`), you'll get a syntax error. Instead:
+    - import the functions into app/page.js
+    -  inside the useEffect hook, run them. Then remove them   
+
+```
+useEffect(() => {
+    Promise.all([
+      fetch(API_QUOTES_ENDPOINT),
+      fetch(API_PRODUCTS_ENDPOINT),
+    ]).then(async ([quotesResponse, productsResponse]) => {
+      const quotes = await quotesResponse.json();
+      const products = await productsResponse.json();
+      await createQuotes();
+      await createProducts();
+
+      setData({
+        quotes: Object.values(quotes),
+        products: Object.values(products),
+      });
+    })
+}, []);
+```
+- Finally run the project: `npm run dev`
