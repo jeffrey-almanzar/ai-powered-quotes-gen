@@ -125,11 +125,11 @@ const columns = [
         label: 'Name'
     },
     {
-        label: 'Client'
+        label: 'Contact Person'
     },
     {
-        label: 'Total'
-    },
+        label: 'Status'
+    }, 
 ];
 
 const NOT_STARTED = 'no-started';
@@ -171,7 +171,7 @@ export default function Quotes() {
     }
 
     const onChange = (e) => {
-        setSearchTerm(e.target.value);
+        setSearchTerm(e.target.value.toLowerCase());
     }
 
     const debouncedOnChange = _.debounce(onChange, 500);
@@ -180,7 +180,7 @@ export default function Quotes() {
         if (!searchTerm) {
             return quote?.status === activeTab;
         }
-        return quote?.status === activeTab && quote.name.includes(searchTerm);
+        return quote?.status === activeTab && quote.name.toLowerCase().includes(searchTerm);
     });
 
     return (
@@ -406,7 +406,7 @@ function ListerBody(props) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {list.map(({ id, date, name, client, total }, index) => (
+                    {list.map(({ id, date, name, contactPersonName, status }, index) => (
                         <TableRow key={`quote-${index}`}>
                             <TableCell className="hidden md:table-cell">
                                 {date}
@@ -415,10 +415,10 @@ function ListerBody(props) {
                                 {name}
                             </TableCell>
                             <TableCell className="font-medium">
-                                {client}
+                                {contactPersonName}
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                                {total}
+                            <Badge variant="secondary">{status}</Badge>
                             </TableCell>
                             <TableCell>
                                 <DropdownMenu>
