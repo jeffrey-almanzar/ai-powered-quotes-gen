@@ -25,7 +25,8 @@ Made a simple system design to get an idea about how the complete system is goin
 <img src="public/system-design.png" width="600" />
 
 - The quote generation engine will poll the email inbox using the email provider's API to get new emails
-- Then it will use the Ai service to detect RFQ emails and extract the details, communicate with the ERP API to confirm that the requested products are in stock, and generate the quote (possibly using the Ai service again)- Use the database to store the generated quotes
+- Then it will use the Ai service to detect RFQ emails and extract the details, communicate with the ERP API to confirm that the requested products are in stock, and generate the quote (possibly using the Ai service again)
+- Use the database to store the generated quotes
 
 ### 4. Technology Stack
 
