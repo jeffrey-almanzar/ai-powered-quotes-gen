@@ -86,7 +86,7 @@ export default function ListerBody(props) {
                                 {date}
                             </TableCell>
                             <TableCell className="font-medium">
-                                {name}
+                                <Link className="underline" href={`/quotes/${id}`}>{name}</Link>
                             </TableCell>
                             <TableCell className="font-medium">
                                 {contactPersonName}
