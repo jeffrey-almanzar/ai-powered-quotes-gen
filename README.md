@@ -60,7 +60,7 @@ Steps:
 - Use `.env.example` to create a `.env.local` file, and set the expected env variables
 - Create initial data:
   - Run the `createQuotes` and `createProducts` functions defined here: https://github.com/Jeffrey-A/quotes-gen/blob/main/lib/firebase/seed.js
-  - I didn't have time to set this up properly, if you try to run it with node (`node lib/firebase/seed.j`), you'll get a syntax error. Instead:
+  - I didn't have time to set this up properly, if you try to run it with node (`node lib/firebase/seed.js`), you'll get a syntax error. Instead:
     - import the functions into app/page.js
     -  inside the useEffect hook, run them. Then remove them   
 
