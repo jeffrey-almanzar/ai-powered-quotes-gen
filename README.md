@@ -82,4 +82,4 @@ useEffect(() => {
     })
 }, []);
 ```
-- Finally run the project: `npm run dev`
+- Finally run the project: `npm run dev` and visit the homepage: http://localhost:3000/
