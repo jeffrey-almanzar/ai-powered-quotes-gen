@@ -11,6 +11,7 @@ import {
 
 import {
     Card,
+    CardContent
 } from "@/app/components/ui/card"
 
 import {
@@ -140,11 +141,19 @@ export default function Quotes() {
                             description="Search Ai generated quotes"
                             onChange={debouncedOnChange}
                         />
-                        <ListerBody
-                            columns={columns}
-                            list={quotesToDisplay}
-                            onDelete={onDelete}
-                        />
+                        {quotesToDisplay.length
+                            ? <ListerBody
+                                columns={columns}
+                                list={quotesToDisplay}
+                                onDelete={onDelete}
+                            />
+                            : (
+                                <CardContent>
+                                    <p>No records to display</p>
+                                </CardContent>
+                            )
+                        }
+
                     </Card>
                 </TabsContent>
                 <TabsContent value={SENT_STATUS}>
@@ -154,11 +163,19 @@ export default function Quotes() {
                             heading="Quotes"
                             description="Search sent quotes"
                         />
-                        <ListerBody
-                            columns={columns}
-                            list={quotesToDisplay}
-                            onDelete={onDelete}
-                        />
+                        {quotesToDisplay.length
+                            ? (<ListerBody
+                                columns={columns}
+                                list={quotesToDisplay}
+                                onDelete={onDelete}
+                            />
+                            )
+                            : (
+                                <CardContent>
+                                    <p>No records to display</p>
+                                </CardContent>
+                            )
+                        }
                     </Card>
                 </TabsContent>
             </Tabs>

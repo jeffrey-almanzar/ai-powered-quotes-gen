@@ -148,6 +148,7 @@ export default function GenQuoteModal(props) {
                 const createdQuote = await response.json();
 
                 if (createdQuote.id) {
+                    setQuoteGenSteps(steps); // reset
                     router.push(`/quotes/${createdQuote.id}`);
                 }
             } else {
