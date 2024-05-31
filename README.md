@@ -18,7 +18,7 @@ When the test was sent to me a week ago, it didn't have an "Example Data" sectio
 - The inventory or products details should be fetched from another system/API. For simplicity, I stored them in my database
 - RFQ emails should have a consistent format, generally speaking. The app expects something similar to: https://github.com/Jeffrey-A/quotes-gen/blob/main/lib/openai/request-for-quote-example.txt
 
-### 3. Design the system
+### 3. System Design
 
 Made a simple system design to get an idea about how the complete system is going to work. I designed it based on the problem statement. 
 
