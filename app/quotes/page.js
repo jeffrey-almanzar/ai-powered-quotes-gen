@@ -127,7 +127,7 @@ const breadcrumbs = [
     },
     {
         name: 'Quotes',
-        link: '/Quotes'
+        link: '/quotes'
     },
 ];
 
