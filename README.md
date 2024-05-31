@@ -30,9 +30,14 @@ Made a simple system design to get an idea about how the complete system is goin
 ### 4. Technology Stack
 
 - Framework: Next.js
+   - I was already familiar with Next.js and decided to use it to get setup and ready for development as soon as possible.  
 - Database: Firebase
+  - Since the system is not relationship heavy and the structure of the data was sort of unknown and expected to change, I decided to use a NoSQL database
+  - Firebase was very appealing to me because I was already familiar with it, it's very scalable, if we need media/files storage we can also use it, have great documentation, easy to learn and get up to speed
 - Ai Service: OpenAI
+    - The most popular AI tool in the last few months/years  
 - Email Sender: SendGrid
+    - I've used it on other projects, very straightforward  
 
 ## Running it locally 
 TODO
