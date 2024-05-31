@@ -6,7 +6,7 @@
 ## Approach
 
 ### 1. Understating the problem 
-When the test was sent to me a week ago from today (05/31/2024), it didn't have an "Example Data" section. Therefore, I used ChatGPT:
+When the test was sent to me a week ago, it didn't have an "Example Data" section. Therefore, I used ChatGPT:
 - To remind myself what Metal Service Centers are
 - What's a RFQ and generated examples
 - What ERP means
