@@ -38,8 +38,12 @@ Made a simple system design to get an idea about how the complete system is goin
     - The most popular AI tool in the last few months/years  
 - Email Sender: SendGrid
     - I've used it on other projects, very straightforward  
-### 5. User Interface Design and Implementation
-TODO
+
+### 5. User Interface (UI)
+
+- I referenced the next starter templates, where I discovered https://ui.shadcn.com/ and ended up using it to create the UI (light weight and flexible )
+- For a better user experience, I implemented it as a single page application
+- There are definitely areas of improvements, such as adding more filters to the lister pages, adding pagination, sort functionally and much more, but I was very limited in time (I'm working full-time, and some family member came to visit me for three days)   
 
 ## Running it locally 
 
@@ -47,6 +51,7 @@ Requirements:
 - Open AI API key
 - Firebase credentials
 - SendGrid API key
+    -  This is not really needed because SendGrid is not 100% hooked up. But [this](https://github.com/Jeffrey-A/quotes-gen/blob/main/lib/sendgrid/index.js#L14) function works and can be hookup [here](https://github.com/Jeffrey-A/quotes-gen/blob/main/app/quotes/%5Bid%5D/page.js#L99). If you do, make sure to update the `from` email.
 
 Steps:
 - Clone this repo
