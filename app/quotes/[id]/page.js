@@ -65,8 +65,7 @@ export default function QuoteDetails(props) {
         fetch(`${API_QUOTES_ENDPOINT}/${quoteId}`)
             .then(response => response.json())
             .then(data => {
-                setQuoteData(data)
-                // setTextAreaValue(data.aiGeneratedEmail || '')
+                setQuoteData(data);
             })
     }, []);
 
@@ -98,6 +97,11 @@ export default function QuoteDetails(props) {
     ];
 
     function sendEmail() {
+        /*
+            - sendEmail in lib/sendgrid/index.js is actually setup to send an email.
+            - however, even though the email is being sent without error, it's not being delivered
+            - didn't have the change to look into it
+        */
         fetch(`${API_QUOTES_ENDPOINT}/${quoteId}`, {
             method: 'PATCH',
             headers: {
@@ -107,10 +111,9 @@ export default function QuoteDetails(props) {
         })
             .then(response => response.json())
             .then(data => {
-                setQuoteData(preData => ({preData, status: 'Sent'}), () => {
-                    toast("Email sent");
-                });
-            })
+                toast("Email sent");
+                setQuoteData(preData => ({...preData, status: 'Sent'}));
+            });
     }
 
     function saveChanges() {
